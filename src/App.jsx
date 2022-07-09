@@ -1,77 +1,73 @@
-import React, {Component} from 'react'
+import React from 'react'
 import {GroupsList} from './components/GroupsList'
-import {BrowserRouter as Router, Link, Route, Switch} from 'react-router-dom'
+import {Link, Route, Router, Switch} from 'react-router-dom'
 import {Grid, Menu, Segment} from 'semantic-ui-react'
 import {ImagesList} from './components/ImagesList'
 import {NotFound} from './components/NotFound'
 import {CreateImage} from './components/CreateImage'
-import {CreateGroup} from './components/CreateGroup'
 import {LogIn} from "./components/LogIn";
+import {CreateGroup} from "./components/CreateGroup";
 
-export default class App extends Component {
-
-    constructor(props) {
-        super(props)
-
-        this.handleLogin = this.handleLogin.bind(this)
-        this.handleLogout = this.handleLogout.bind(this)
+export default function App(props) {
+    const handleLogin = () => {
+        props.auth.login()
     }
 
-    handleLogin() {
-        this.props.auth.login()
+    const handleLogout = () => {
+        props.auth.logout()
     }
 
-    handleLogout() {
-        this.props.auth.logout()
+
+    const generateMenu = () => {
+        return (<Menu>
+            <Menu.Item name="home">
+                <Link to="/">Home</Link>
+            </Menu.Item>
+            <Menu.Menu position='right'>{logInLogOutButton()}</Menu.Menu>
+        </Menu>)
     }
 
-    render() {
-        return (
-            <div>
-                <Segment style={{padding: '8em 0em'}} vertical>
-                    <Grid container stackable verticalAlign="middle">
-                        <Grid.Row>
-                            <Grid.Column width={16}>
-                                <Router>
-                                    {this.generateMenu()}
-
-                                    {this.generateCurrentPage()}
-                                </Router>
-                            </Grid.Column>
-                        </Grid.Row>
-                    </Grid>
-                </Segment>
-            </div>
-        )
+    const logInLogOutButton = () => {
+        if (props.auth.isAuthenticated()) {
+            return (<Menu.Item name='logout' onClick={handleLogout}>
+                Log Out
+            </Menu.Item>)
+        } else {
+            return (<Menu.Item name='login' onClick={handleLogin}>
+                Log In
+            </Menu.Item>)
+        }
     }
 
-    generateMenu() {
-        return (
-            <Menu>
-                <Menu.Item name="home">
-                    <Link to="/">Home</Link>
-                </Menu.Item>
-            </Menu>
-        )
-    }
-
-    generateCurrentPage() {
-        if (!this.props.auth.isAuthenticated()) {
-            return <LogIn auth={this.props.auth}/>
+    const generateCurrentPage = () => {
+        if (!props.auth.isAuthenticated()) {
+            return <LogIn auth={props.auth}/>
         }
 
-        return (
-            <Switch>
-                <Route path="/groups/create" exact component={CreateGroup}/>
+        return (<Switch>
+            <Route path={`/images/:groupId`}><ImagesList {...props} auth={props.auth}/></Route>
+            <Route path={`/groups/create`}><CreateGroup {...props} auth={props.auth}/></Route>
+            <Route path={`/groups/:groupId/create`}><CreateImage {...props} auth={props.auth}/></Route>
+            <Route exact path=''><GroupsList {...props} auth={props.auth}/></Route>
 
-                <Route path="/images/:groupId" exact component={ImagesList}/>
-
-                <Route path="/images/:groupId/create" exact component={CreateImage}/>
-
-                <Route path="/" exact component={GroupsList}/>
-
-                <Route component={NotFound}/>
-            </Switch>
-        )
+            <Route component={NotFound}/>
+        </Switch>)
     }
+
+    return (<div>
+        <Segment style={{padding: '8em 0em'}} vertical>
+            <Grid container stackable verticalAlign='middle'>
+                <Grid.Row>
+                    <Grid.Column width={16}>
+                        <Router history={props.history}>
+                            {generateMenu()}
+
+                            {generateCurrentPage()}
+                        </Router>
+                    </Grid.Column>
+                </Grid.Row>
+            </Grid>
+        </Segment>
+    </div>)
+
 }
