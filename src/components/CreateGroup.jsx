@@ -35,6 +35,7 @@ export class CreateGroup extends React.PureComponent {
             console.log('Created description', group)
 
             alert('Group was created!')
+            this.props.history.push(``)
         } catch (e) {
             alert('Could not upload an image: ' + e.message)
         } finally {
