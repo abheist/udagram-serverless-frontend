@@ -1,104 +1,91 @@
 import * as React from 'react'
+import {useState} from 'react'
 import {Button, Form} from 'semantic-ui-react'
 import {createImage, uploadFile} from '../api/images-api'
+import {useParams} from "react-router-dom";
 
-export class CreateImage extends React.PureComponent {
-    state = {
+export function CreateImage(props) {
+    let initialState = {
         title: '',
         file: undefined,
         uploadState: undefined
     }
+    const [image, setImage] = useState({...initialState})
+    const {groupId} = useParams()
 
-    handleTitleChange = (event) => {
-        this.setState({title: event.target.value})
-    }
-
-    handleFileChange = (event) => {
+    const handleFileChange = (event) => {
         const files = event.target.files
         if (!files) return
 
         console.log('File change', files)
-        this.setState({
+        setImage({
+            ...image,
             file: files[0]
         })
     }
 
-    handleSubmit = async (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault()
 
         try {
-            if (!this.state.file) {
+            if (!image.file) {
                 alert("File should be selected!")
                 return
             }
 
-            this.setUploadState(undefined)
+            setImage({...initialState})
             const uploadInfo = await createImage({
-                groupId: this.props.match.params.groupId,
-                title: this.state.title
+                groupId: groupId,
+                title: image.title
             })
 
             console.log('Created image', uploadInfo)
 
-            this.setUploadState(undefined)
-            await uploadFile(uploadInfo.uploadUrl, this.state.file)
+            setImage({...initialState})
+            await uploadFile(uploadInfo.uploadUrl, image.file)
 
             alert('Image was uploaded!')
+            props.history.push(`/images/${groupId}`)
         } catch (e) {
             alert('Could not upload an image: ' + e.message)
         } finally {
-            this.setUploadState(undefined)
+            setImage({...initialState})
         }
     }
 
-    setUploadState(uploadState) {
-        this.setState({
-            uploadState
-        })
-    }
+    return (
+        <div>
+            <h1>Upload new image</h1>
 
-    render() {
-        return (
-            <div>
-                <h1>Upload new image</h1>
+            <Form onSubmit={handleSubmit}>
+                <Form.Field>
+                    <label>Title</label>
+                    <input
+                        placeholder="Image title"
+                        value={image.title}
+                        onChange={(e) => setImage({...image, title: e.target.value})}
+                    />
+                </Form.Field>
+                <Form.Field>
+                    <label>Image</label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        placeholder="Image to upload"
+                        onChange={handleFileChange}
+                    />
+                </Form.Field>
 
-                <Form onSubmit={this.handleSubmit}>
-                    <Form.Field>
-                        <label>Title</label>
-                        <input
-                            placeholder="Image title"
-                            value={this.state.title}
-                            onChange={this.handleTitleChange}
-                        />
-                    </Form.Field>
-                    <Form.Field>
-                        <label>Image</label>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            placeholder="Image to upload"
-                            onChange={this.handleFileChange}
-                        />
-                    </Form.Field>
-
-                    {this.renderButton()}
-                </Form>
-            </div>
-        )
-    }
-
-    renderButton() {
-
-        return (
-            <div>
-                <p>Uploading image metadata</p>
-                <p>Uploading File</p>
-                <Button
-                    type="submit"
-                >
-                    Upload
-                </Button>
-            </div>
-        )
-    }
+                <div>
+                    <p>Uploading image metadata</p>
+                    <p>Uploading File</p>
+                    <Button
+                        type="submit"
+                    >
+                        Upload
+                    </Button>
+                </div>
+            </Form>
+        </div>
+    )
 }

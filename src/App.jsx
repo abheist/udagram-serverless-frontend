@@ -45,10 +45,10 @@ export default function App(props) {
         }
 
         return (<Switch>
-            <Route path={`/images/:groupId`}><ImagesList {...props} auth={props.auth}/></Route>
-            <Route path={`/groups/create`}><CreateGroup {...props} auth={props.auth}/></Route>
-            <Route path={`/groups/:groupId/create`}><CreateImage {...props} auth={props.auth}/></Route>
-            <Route exact path=''><GroupsList {...props} auth={props.auth}/></Route>
+            <Route exact path={`/images/:groupId`}><ImagesList {...props}/></Route>
+            <Route exact path={`/images/:groupId/create`}><CreateImage {...props}/></Route>
+            <Route exact path={`/groups/create`}><CreateGroup {...props}/></Route>
+            <Route exact path=''><GroupsList {...props}/></Route>
 
             <Route component={NotFound}/>
         </Switch>)
