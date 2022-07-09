@@ -27,3 +27,14 @@ export async function createGroup(newGroup) {
     const result = await reply.json();
     return result.newItem
 }
+
+export async function deleteGroup(groupId) {
+     await fetch(`${apiEndpoint}/groups/${groupId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: ''
+    })
+    return true
+}

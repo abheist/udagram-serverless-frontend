@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {Group} from './Group'
-import {getGroups} from '../api/groups-api'
+import {deleteGroup, getGroups} from '../api/groups-api'
 import {Button, Card, Divider} from 'semantic-ui-react'
 
 export class GroupsList extends React.PureComponent {
@@ -10,6 +10,14 @@ export class GroupsList extends React.PureComponent {
 
     handleCreateGroup = () => {
         this.props.history.push(`/groups/create`)
+    }
+
+    handleRemoveGroup = (groupId) => {
+        console.log({groupId})
+        deleteGroup(groupId).then(response => {
+            let newState = this.state.groups.filter(group => group.id !== groupId)
+            this.setState({groups: [...newState]})
+        })
     }
 
     async componentDidMount() {
@@ -41,7 +49,7 @@ export class GroupsList extends React.PureComponent {
 
                 <Card.Group>
                     {this.state.groups && this.state.groups.map(group => {
-                        return <Group key={group.id} group={group}/>
+                        return <Group key={group.id} group={group} removeGroup={this.handleRemoveGroup}/>
                     })}
                 </Card.Group>
             </div>
